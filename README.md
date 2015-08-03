@@ -1,5 +1,6 @@
 # jwt.go
 
+[![Build Status](https://img.shields.io/travis/nabeken/jwt.go/master.svg)](https://travis-ci.org/nabeken/jwt.go)
 [![BSD License](http://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/nabeken/jwt.go/blob/master/LICENSE)
 
 :construction: UNDER DEVELOPMENT :construction:

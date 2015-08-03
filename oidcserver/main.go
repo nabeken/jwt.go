@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
@@ -21,7 +22,7 @@ type OIDCHandler struct {
 	ClientID     string
 	ClientSecret string
 
-	JWKFetcher *jwt.JWKFetcher
+	JWKFetcher jwt.JWKFetcher
 }
 
 func (h *OIDCHandler) HandleAuth(rw http.ResponseWriter, req *http.Request) {
@@ -58,7 +59,7 @@ func (h *OIDCHandler) HandleCallback(rw http.ResponseWriter, req *http.Request) 
 	body, _ := ioutil.ReadAll(resp.Body)
 	fmt.Fprintln(rw, string(body))
 
-	tokenResp := jwt.OAuth2TokenResponse{}
+	tokenResp := OAuth2TokenResponse{}
 	if err := json.Unmarshal(body, &tokenResp); err != nil && err != io.EOF {
 		http.Error(rw, "unable to parse token response", http.StatusInternalServerError)
 		return
@@ -78,31 +79,38 @@ func (h *OIDCHandler) HandleCallback(rw http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	var verified bool
-	var verifiedOIDCClaimSet jwt.OIDCClaimSet
-	for _, jwk := range jwks {
-		fmt.Fprintln(rw, "Using JWK", jwk.KeyID)
-		rawIdToken, err := jwsObject.Verify(jwk)
-		if err != nil {
-			fmt.Fprintln(rw, "unable to verify ID token:", err)
-			continue
-		}
-
-		err = json.Unmarshal(rawIdToken, &verifiedOIDCClaimSet)
-		if err != nil {
-			fmt.Fprintln(rw, "unable to parse ID Token:", err)
-			continue
-		}
-		fmt.Fprintln(rw, "successed to verify and parse ID Token with KID", jwk.KeyID)
-		verified = true
-		break
-	}
-	if !verified {
+	var verifiedOIDCClaimSet OIDCClaimSet
+	rawJWT, err := jwt.VerifyJWKs(jwsObject, jwks)
+	if err != nil {
 		http.Error(rw, "unable to verify ID token using JWKs", http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Fprintln(rw, verifiedOIDCClaimSet)
+	if err := json.Unmarshal(rawJWT, &verifiedOIDCClaimSet); err != nil {
+		http.Error(rw, "unable to unmarshal to ID token", http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintln(rw, string(rawJWT))
+
+	// Verify aud
+	if verifiedOIDCClaimSet.Aud != h.ClientID {
+		http.Error(rw, "aud != client_id", http.StatusInternalServerError)
+		return
+	}
+
+	// Verify iss
+	if verifiedOIDCClaimSet.Iss != "https://accounts.google.com" {
+		http.Error(rw, "iss != https://accounts.google.com", http.StatusInternalServerError)
+		return
+	}
+
+	// Verify exp (expiration time)
+	skew := time.Second
+	if !jwt.VerifyExp(skew, verifiedOIDCClaimSet.Exp) {
+		http.Error(rw, "token has been expired.", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h *OIDCHandler) HandleLogin(rw http.ResponseWriter, req *http.Request) {
@@ -119,9 +127,7 @@ func main() {
 	oidcHandler := &OIDCHandler{
 		ClientID:     os.Getenv("OIDC_CLIENT_ID"),
 		ClientSecret: os.Getenv("OIDC_CLIENT_SECRET"),
-		JWKFetcher: &jwt.JWKFetcher{
-			URI: os.Getenv("OIDC_JWKSET_URI"),
-		},
+		JWKFetcher:   jwt.NewJWKFetcher(os.Getenv("OIDC_JWKSET_URI")),
 	}
 
 	r := mux.NewRouter()

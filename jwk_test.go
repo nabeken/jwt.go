@@ -8,8 +8,8 @@ import (
 
 func TestJWKFetcher(t *testing.T) {
 	assert := assert.New(t)
-	fetcher := &JWKFetcher{
-		URI: "https://www.googleapis.com/oauth2/v3/certs",
+	fetcher := &jwkFetcher{
+		uri: "https://www.googleapis.com/oauth2/v3/certs",
 	}
 
 	jwks, err := fetcher.FetchJWK()
