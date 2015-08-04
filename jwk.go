@@ -14,18 +14,18 @@ type JWKSet struct {
 	Keys []*jose.JsonWebKey `json:"keys"`
 }
 
-// JWKFetcher is an interface that represents JWK fetcher.
-type JWKFetcher interface {
-	FetchJWK(string) ([]*jose.JsonWebKey, error)
+// JWKsFetcher is an interface that represents JWKs fetcher.
+type JWKsFetcher interface {
+	FetchJWKs(string) ([]*jose.JsonWebKey, error)
 }
 
-// JWKHTTPFetcher fetches JWKs via HTTP.
-type JWKHTTPFetcher struct {
+// JWKsHTTPFetcher fetches JWKs via HTTP.
+type JWKsHTTPFetcher struct {
 	Client http.Client
 }
 
-// FetchJWK implements JWKFetcher interface.
-func (f *JWKHTTPFetcher) FetchJWK(uri string) ([]*jose.JsonWebKey, error) {
+// FetchJWKs implements JWKsFetcher interface.
+func (f *JWKsHTTPFetcher) FetchJWKs(uri string) ([]*jose.JsonWebKey, error) {
 	resp, err := f.Client.Get(uri)
 	if err != nil {
 		return nil, err

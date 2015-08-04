@@ -23,7 +23,7 @@ type OIDCHandler struct {
 	ClientSecret string
 	JWKSetURL    string
 
-	JWKFetcher jwt.JWKFetcher
+	JWKsFetcher jwt.JWKsFetcher
 }
 
 func (h *OIDCHandler) HandleAuth(rw http.ResponseWriter, req *http.Request) {
@@ -74,7 +74,7 @@ func (h *OIDCHandler) HandleCallback(rw http.ResponseWriter, req *http.Request) 
 	}
 
 	// Retrieve JWKs
-	jwks, err := h.JWKFetcher.FetchJWK(h.JWKSetURL)
+	jwks, err := h.JWKsFetcher.FetchJWKs(h.JWKSetURL)
 	if err != nil {
 		http.Error(rw, "unable to retrieve JWKs", http.StatusInternalServerError)
 		return
@@ -129,7 +129,7 @@ func main() {
 		ClientID:     os.Getenv("OIDC_CLIENT_ID"),
 		ClientSecret: os.Getenv("OIDC_CLIENT_SECRET"),
 		JWKSetURL:    os.Getenv("OIDC_JWKSET_URI"),
-		JWKFetcher:   &jwt.JWKHTTPFetcher{},
+		JWKsFetcher:  &jwt.JWKsHTTPFetcher{},
 	}
 
 	r := mux.NewRouter()
