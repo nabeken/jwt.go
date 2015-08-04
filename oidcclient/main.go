@@ -21,6 +21,7 @@ var tokenEndpoint = "https://www.googleapis.com/oauth2/v4/token"
 type OIDCHandler struct {
 	ClientID     string
 	ClientSecret string
+	JWKSetURL    string
 
 	JWKFetcher jwt.JWKFetcher
 }
@@ -73,7 +74,7 @@ func (h *OIDCHandler) HandleCallback(rw http.ResponseWriter, req *http.Request) 
 	}
 
 	// Retrieve JWKs
-	jwks, err := h.JWKFetcher.FetchJWK()
+	jwks, err := h.JWKFetcher.FetchJWK(h.JWKSetURL)
 	if err != nil {
 		http.Error(rw, "unable to retrieve JWKs", http.StatusInternalServerError)
 		return
@@ -127,7 +128,8 @@ func main() {
 	oidcHandler := &OIDCHandler{
 		ClientID:     os.Getenv("OIDC_CLIENT_ID"),
 		ClientSecret: os.Getenv("OIDC_CLIENT_SECRET"),
-		JWKFetcher:   jwt.NewJWKFetcher(os.Getenv("OIDC_JWKSET_URI")),
+		JWKSetURL:    os.Getenv("OIDC_JWKSET_URI"),
+		JWKFetcher:   &jwt.JWKHTTPFetcher{},
 	}
 
 	r := mux.NewRouter()
