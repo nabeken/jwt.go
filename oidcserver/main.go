@@ -31,7 +31,7 @@ func (h *OIDCHandler) HandleAuth(rw http.ResponseWriter, req *http.Request) {
 	v.Set("response_type", "code")
 	v.Set("scope", "openid email")
 	v.Set("redirect_uri", "http://oidc.dev:8000/oidc/auth/callback")
-	v.Set("state", jwt.StateToken())
+	v.Set("state", StateToken())
 	fmt.Fprintln(rw, "https://accounts.google.com/o/oauth2/v2/auth?"+v.Encode())
 }
 
