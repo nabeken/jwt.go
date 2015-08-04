@@ -13,14 +13,14 @@ func TestVerifyExp(t *testing.T) {
 
 	{
 		exp := now.Unix()
-		assert.False(VerifyExp(0, exp), "False if now == exp")
+		assert.False(verifyExp(now, 0, exp), "False if now == exp")
 	}
 	{
 		exp := now.Add(time.Second).Unix()
-		assert.True(VerifyExp(0, exp), "True if now < exp")
+		assert.True(verifyExp(now, 0, exp), "True if now < exp")
 	}
 	{
 		skew := time.Second
-		assert.True(VerifyExp(skew, now.Unix()), "True if now == exp + 1s")
+		assert.True(verifyExp(now, skew, now.Unix()), "True if now == exp + 1s")
 	}
 }
