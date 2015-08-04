@@ -39,15 +39,3 @@ func (f *JWKsHTTPFetcher) FetchJWKs(uri string) ([]*jose.JsonWebKey, error) {
 
 	return keyset.Keys, nil
 }
-
-// VerifyJWKs validates jws by jwks and return the payload.
-// If VerifyJWKs fails to validate by all jwks, it will return the last verification error.
-func VerifyJWKs(jws *jose.JsonWebSignature, jwks []*jose.JsonWebKey) ([]byte, error) {
-	var err error
-	for _, jwk := range jwks {
-		if rawJWT, err := jws.Verify(jwk); err == nil {
-			return rawJWT, nil
-		}
-	}
-	return nil, err
-}

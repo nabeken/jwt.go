@@ -81,7 +81,7 @@ func (h *OIDCHandler) HandleCallback(rw http.ResponseWriter, req *http.Request) 
 	}
 
 	var verifiedOIDCClaimSet OIDCClaimSet
-	rawJWT, err := jwt.VerifyJWKs(jwsObject, jwks)
+	rawJWT, _, err := jwt.VerifyJWS(jwsObject, jwks)
 	if err != nil {
 		http.Error(rw, "unable to verify ID token using JWKs", http.StatusInternalServerError)
 		return
