@@ -36,7 +36,6 @@ func main() {
 	fmt.Fprint(hasher, rawPublicKey)
 	hashed := hex.EncodeToString(hasher.Sum(nil))
 
-
 	// TODO(nabeken): be able to specify multiple keys
 	jwks := struct {
 		Keys []*jose.JsonWebKey `json:"keys"`
