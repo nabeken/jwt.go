@@ -6,8 +6,10 @@ import "github.com/square/go-jose"
 // If VerifyJWS fails to validate by all jwks, it will return the last verification error.
 func VerifyJWS(jws *jose.JsonWebSignature, jwks []*jose.JsonWebKey) ([]byte, *jose.JsonWebKey, error) {
 	var err error
+	var rawJWT []byte
+
 	for _, jwk := range jwks {
-		if rawJWT, err := jws.Verify(jwk); err == nil {
+		if rawJWT, err = jws.Verify(jwk); err == nil {
 			return rawJWT, jwk, nil
 		}
 	}
