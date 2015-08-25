@@ -12,8 +12,8 @@ import (
 
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
-	"github.com/nabeken/jwt.go"
 	"github.com/square/go-jose"
+	"gopkg.in/nabeken/jwt.go.v2"
 )
 
 var tokenEndpoint = "https://www.googleapis.com/oauth2/v4/token"
@@ -81,7 +81,7 @@ func (h *OIDCHandler) HandleCallback(rw http.ResponseWriter, req *http.Request) 
 	}
 
 	var verifiedOIDCClaimSet OIDCClaimSet
-	rawJWT, _, err := jwt.VerifyJWS(jwsObject, jwks)
+	rawJWT, _, err := jwt.VerifyJWS(jwsObject, jwks.Keys)
 	if err != nil {
 		http.Error(rw, "unable to verify ID token using JWKs", http.StatusInternalServerError)
 		return

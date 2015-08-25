@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pmylund/go-cache"
 	"github.com/square/go-jose"
 	"github.com/stretchr/testify/assert"
 )
