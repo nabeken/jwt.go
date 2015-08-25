@@ -20,21 +20,20 @@ func TestJWKsFetcher(t *testing.T) {
 }
 
 func TestJWKsCacher(t *testing.T) {
-	c := cache.New(10*time.Minute, time.Minute)
+	defaultExpiration := 10 * time.Minute
+	cleanupInterval := time.Minute
+
 	assert := assert.New(t)
-	cacher := &JWKsCacher{
-		Fetcher: &JWKsHTTPFetcher{
-			Client: &http.Client{},
-		},
-		Cache: c,
-	}
+	cacher := NewCacher(defaultExpiration, cleanupInterval, &JWKsHTTPFetcher{
+		Client: &http.Client{},
+	})
 
 	cacheKey := "https://www.googleapis.com/oauth2/v3/certs"
 	jwksresp, err := cacher.FetchJWKs(cacheKey)
 	assert.NoError(err)
 	assert.Len(jwksresp.Keys, 2)
 
-	cachedResp, found := c.Get(cacheKey)
+	cachedResp, found := cacher.cache.Get(cacheKey)
 	assert.True(found)
 
 	resp, ok := cachedResp.([]*jose.JsonWebKey)

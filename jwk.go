@@ -85,22 +85,45 @@ func (f *JWKsS3Fetcher) FetchJWKs(path string) (*JWKSetResponse, error) {
 
 // JWKsCacher fetches JWKs via Cache if available.
 type JWKsCacher struct {
-	Fetcher JWKsFetcher
-	Cache   *cache.Cache
+	fetcher JWKsFetcher
+	cache   *cache.Cache
+
+	defaultExpiration time.Duration
+	cleanupInterval   time.Duration
+}
+
+// NewCacher returns JWKsCacher with initializing cache store.
+func NewCacher(defaultExpiration, cleanupInterval time.Duration, f JWKsFetcher) *JWKsCacher {
+	c := cache.New(defaultExpiration, cleanupInterval)
+	return &JWKsCacher{
+		fetcher: f,
+		cache:   c,
+
+		defaultExpiration: defaultExpiration,
+		cleanupInterval:   cleanupInterval,
+	}
 }
 
 // FetchJWKs tries to retrieve JWKs from Cache. If the cache is not available,
 // it will call Fetcher.FetchJWKs and cache the result for future request.
 func (c *JWKsCacher) FetchJWKs(cacheKey string) (*JWKSetResponse, error) {
-	if keys, found := c.Cache.Get(cacheKey); found {
+	if keys, found := c.cache.Get(cacheKey); found {
 		return &JWKSetResponse{Keys: keys.([]*jose.JsonWebKey)}, nil
 	}
-	jwksresp, err := c.Fetcher.FetchJWKs(cacheKey)
+	jwksresp, err := c.fetcher.FetchJWKs(cacheKey)
 	if err != nil {
 		return nil, err
 	}
 
-	c.Cache.Set(cacheKey, jwksresp.Keys, jwksresp.TTL)
+	ttl := jwksresp.TTL
+
+	// If TTL is larger than cleanupInterval, we should subtract cleanupInterval from TTL to
+	// make sure that the latest jwks is obtained.
+	if ttl > c.cleanupInterval {
+		ttl -= c.cleanupInterval
+	}
+
+	c.cache.Set(cacheKey, jwksresp.Keys, ttl)
 	return jwksresp, nil
 }
 
