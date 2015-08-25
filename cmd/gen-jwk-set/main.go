@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/nabeken/jwt.go"
 	"github.com/square/go-jose"
 )
 
@@ -37,9 +38,7 @@ func main() {
 	hashed := hex.EncodeToString(hasher.Sum(nil))
 
 	// TODO(nabeken): be able to specify multiple keys
-	jwks := struct {
-		Keys []*jose.JsonWebKey `json:"keys"`
-	}{
+	jwks := &jwt.JWKSet{
 		Keys: []*jose.JsonWebKey{
 			&jose.JsonWebKey{
 				Key:       publicKey,
