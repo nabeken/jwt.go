@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,9 +10,9 @@ import (
 func TestJWKFetcher(t *testing.T) {
 	assert := assert.New(t)
 	fetcher := &JWKsHTTPFetcher{
-		URI: "https://www.googleapis.com/oauth2/v3/certs",
+		Client: &http.Client{},
 	}
-	jwks, err := fetcher.FetchJWKs()
+	jwksresp, err := fetcher.FetchJWKs("https://www.googleapis.com/oauth2/v3/certs")
 	assert.NoError(err)
-	assert.Len(jwks, 2)
+	assert.Len(jwksresp.Keys, 2)
 }
