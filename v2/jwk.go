@@ -51,7 +51,6 @@ func (f *JWKsHTTPFetcher) FetchJWKs(uri string) (*JWKSetResponse, error) {
 	jwks, err := DecodeJWKSet(resp.Body)
 	return &JWKSetResponse{
 		Keys: jwks,
-		TTL:  0,
 	}, err
 }
 
@@ -81,21 +80,22 @@ func (f *JWKsS3Fetcher) FetchJWKs(path string) (*JWKSetResponse, error) {
 	jwks, err := DecodeJWKSet(resp.Body)
 	return &JWKSetResponse{
 		Keys: jwks,
-		TTL:  0,
 	}, err
 }
 
+// JWKsCacher fetches JWKs via Cache if available.
 type JWKsCacher struct {
-	JWKsFetcher
-
-	Cache *cache.Cache
+	Fetcher JWKsFetcher
+	Cache   *cache.Cache
 }
 
+// FetchJWKs tries to retrieve JWKs from Cache. If the cache is not available,
+// it will call Fetcher.FetchJWKs and cache the result for future request.
 func (c *JWKsCacher) FetchJWKs(cacheKey string) (*JWKSetResponse, error) {
 	if keys, found := c.Cache.Get(cacheKey); found {
 		return &JWKSetResponse{Keys: keys.([]*jose.JsonWebKey)}, nil
 	}
-	jwksresp, err := c.FetchJWKs(cacheKey)
+	jwksresp, err := c.Fetcher.FetchJWKs(cacheKey)
 	if err != nil {
 		return nil, err
 	}
