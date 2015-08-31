@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
@@ -17,6 +18,25 @@ func TestJWKsFetcher(t *testing.T) {
 	jwksresp, err := fetcher.FetchJWKs("https://www.googleapis.com/oauth2/v3/certs")
 	assert.NoError(err)
 	assert.Len(jwksresp.Keys, 2)
+
+	resp, err := http.Get("https://www.googleapis.com/oauth2/v3/certs")
+	if !assert.NoError(err) {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if !assert.NoError(err) {
+		return
+	}
+
+	inMemfetcher := &JWKsInMemoryFetcher{
+		RAWJWKs: body,
+	}
+
+	inMemResp, err := inMemfetcher.FetchJWKs("")
+	assert.NoError(err)
+	assert.Equal(jwksresp.Keys, inMemResp.Keys)
 }
 
 func TestJWKsCacher(t *testing.T) {
