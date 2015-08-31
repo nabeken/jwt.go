@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -32,6 +33,22 @@ type JWKSetResponse struct {
 type JWKsFetcher interface {
 	// FetchJWKs retrieves JWKSet from path.
 	FetchJWKs(path string) (*JWKSetResponse, error)
+}
+
+// JWKsInMemoryFetcher fetches JWKs from its memory.
+type JWKsInMemoryFetcher struct {
+	RAWJWKs []byte
+}
+
+// FetchJWKs implements JWKsFetcher interface by using internal JWKs.
+func (f *JWKsInMemoryFetcher) FetchJWKs(_ string) (*JWKSetResponse, error) {
+	jwks, err := DecodeJWKSet(bytes.NewReader(f.RAWJWKs))
+	if err != nil {
+		return nil, err
+	}
+	return &JWKSetResponse{
+		Keys: jwks,
+	}, nil
 }
 
 // JWKsHTTPFetcher fetches JWKs via HTTP.
