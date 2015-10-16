@@ -10,8 +10,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/nabeken/jwt.go"
 	"github.com/square/go-jose"
-	"gopkg.in/nabeken/jwt.go.v2"
 )
 
 func main() {
