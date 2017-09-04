@@ -1,13 +1,15 @@
-# jwt.go
+# go-jwkset
 
-[![Build Status](https://img.shields.io/travis/nabeken/jwt.go/master.svg)](https://travis-ci.org/nabeken/jwt.go)
-[![BSD License](http://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/nabeken/jwt.go/blob/master/LICENSE)
+[![Build Status](https://img.shields.io/travis/nabeken/go-jwkset/master.svg)](https://travis-ci.org/nabeken/jwt.go)
+[![BSD License](http://img.shields.io/badge/license-BSD-blue.svg)](https://github.com/nabeken/go-jwkset/blob/master/LICENSE)
 
-:construction: UNDER DEVELOPMENT :construction:
+go-jwkset provides a cache-aware tiny interface and its implementation to retrieve JSON Web Key Set on top of [square/go-jose.v2](https://gopkg.in/square/go-jose.v2) library.
 
-# Primary Goal
+# Built-in implementation
 
-- Stop implementing crypto things by myself.
-  - Use [square/go-jose](https://github.com/square/go-jose) instead.
-- Provide building blocks around JWT, JWK and JWS not whole implementation.
-  - Work well for both using JWT and providing JWT-based service.
+- Plain HTTP
+- AWS S3
+
+# Versioning
+
+This library follows [Semantic Versions](http://semver.org/) and we highly recommend to use some package manager such as `dep` or `glide`.

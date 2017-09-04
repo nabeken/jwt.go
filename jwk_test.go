@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/square/go-jose"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/square/go-jose.v2"
 )
 
 func TestJWKsFetcher(t *testing.T) {
@@ -36,8 +36,8 @@ func TestJWKsCacher(t *testing.T) {
 	cachedResp, found := cacher.cache.Get(cacheKey)
 	assert.True(found)
 
-	resp, ok := cachedResp.([]*jose.JsonWebKey)
-	if assert.True(ok, "cached response should be []*jose.JsonWebKey but %#v", cachedResp) {
+	resp, ok := cachedResp.([]jose.JSONWebKey)
+	if assert.True(ok, "cached response should be []jose.JSONWebKey but %#v", cachedResp) {
 		assert.Equal(jwksresp.Keys, resp)
 	}
 
